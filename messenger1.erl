@@ -1,4 +1,4 @@
-%%% Message passing utility.  
+%%% Message passing utility.
 %%% User interface:
 %%% logon(Name)
 %%%     One user at a time can log in from each Erlang node in the
@@ -9,18 +9,18 @@
 %%% logoff()
 %%%     Logs off anybody at that node
 %%% message(ToName, Message)
-%%%     sends Message to ToName. Error messages if the user of this 
+%%%     sends Message to ToName. Error messages if the user of this
 %%%     function is not logged on or if ToName is not logged on at
 %%%     any node.
 %%%
 %%% One node in the network of Erlang nodes runs a server which maintains
 %%% data about the logged on users. The server is registered as "messenger"
 %%% Each node where there is a user logged on runs a client process registered
-%%% as "mess_client" 
+%%% as "mess_client"
 %%%
 %%% Protocol between the client processes and the server
 %%% ----------------------------------------------------
-%%% 
+%%%
 %%% To server: {ClientPid, logon, UserName}
 %%% Reply {messenger, stop, user_exists_at_other_node} stops the client
 %%% Reply {messenger, logged_on} logon was successful
@@ -48,7 +48,7 @@
 %%% Configuration: change the server_node() function to return the
 %%% name of the node where the messenger server runs
 
--module(messenger).
+-module(messenger1).
 -export([start_server/0, server/1, logon/1, logoff/0, message/2, client/2]).
 
 %%% Change the function below to return the name of the node where the
@@ -110,16 +110,16 @@ server_transfer(From, Name, To, Message, User_List) ->
         false ->
             From ! {messenger, receiver_not_found};
         {value, {ToPid, To}} ->
-            ToPid ! {message_from, Name, Message}, 
-            From ! {messenger, sent} 
+            ToPid ! {message_from, Name, Message},
+            From ! {messenger, sent}
     end.
 
 
 %%% User Commands
 logon(Name) ->
-    case whereis(mess_client) of 
+    case whereis(mess_client) of
         undefined ->
-            register(mess_client, 
+            register(mess_client,
                      spawn(messenger, client, [server_node(), Name]));
         _ -> already_logged_on
     end.
@@ -158,7 +158,7 @@ client(Server_Node) ->
 %%% wait for a response from the server
 await_result() ->
     receive
-        {messenger, stop, Why} -> % Stop the client 
+        {messenger, stop, Why} -> % Stop the client
             io:format("~p~n", [Why]),
             exit(normal);
         {messenger, What} ->  % Normal response
